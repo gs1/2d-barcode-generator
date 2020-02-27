@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>GS1 Digital Link Barcode Generator</title>
+  <script src="https://gs1.github.io/GS1DigitalLinkCompressionPrototype/src/GS1DigitalLinkToolkit.js"></script>
+  <style type="text/css">
+    body {font-family: sans-serif}
+    input {margin: 0 2em 0 0.5em}
+    select {margin-right: 2em}
+
+    span.addDA, span.removeDA {
+      display: inline-block;
+      width:2em;
+      text-align:center;
+      border: dotted thin black;
+      border-radius:0.3em;
+      margin-right: 1em;
+    }
+
+    span.th, span.td {
+      display: table-cell;
+      padding: 1em;
+    }
+
+    span.th {
+      font-weight: bold;
+      width: 10em;
+    }
+
+    span.td {
+      font-weight: normal;
+    }
+  </style>
+</head>
+<body>
+
+<header><h1>GS1 Digital Link Barcode Generator</h1><p>Very much <em>under construction!</em></p></header>
+<main>
+<p>This helps you to manually create a variety of GS1 barcodes and QR codes that carry GS1 Digital Link URIs.</p>
+
+<section id="inputForm"><h2>Input</h2>
+  <button id="useExample">Use example data</button>
+  <section id="primaryKeyInput"><h3>Primary key</h3>
+    <label for="primaryKeyAI">Primary key (AI)</label> <select id="primaryKeyAI"></select> 
+    <label for="primaryKeyValue">Value</label> <input type="text" id="primaryKeyValue" />
+<span id="foo"></span>
+  </section>
+
+  <section id="keyQualifierInput"></section>
+
+  <section id="daInput"></section>
+</section>
+
+<section id="outputArea"><h2>Output</h2>
+  <button id="generate">Generate Barcode</button>
+
+</section>
+
+</main>
+
+
+<script>
+let gs1dlt = new GS1DigitalLinkToolkit();
+let noDaAttributes = 0;
+const placeHolder = 'Please select a data attribute';
+const terryScript = 'http://bwipjs-api.metafloor.com/?bcid='; // gs1datamatrix&text=(01)' +  gtins[i].gtin;
+
+
+window.onload = init;    
+
+function init() {
+  let primaryKeyAI = document.getElementById('primaryKeyAI');
+  let primaryKeyValue = document.getElementById('primaryKeyValue');
+  primaryKeyAI.addEventListener('change', function () {updateKQs(this.value)}, false);
+
+  gs1dlt.aitable.forEach(function (k) {
+    if (k.type == 'I') {                        // We have a primay key
+      let o = document.createElement('option');
+      o.value = k.ai;
+      o.appendChild(document.createTextNode(k.title));
+      if (k.ai == '01') {o.selected = true} // default to GTIN
+      primaryKeyAI.appendChild(o);
+    }
+  });
+  updateKQs(primaryKeyAI.value);
+  updateDAs();
+  let gButton = document.getElementById('generate');
+  gButton.addEventListener('click', generateOutput, false);
+  gButton = document.getElementById('useExample');
+  gButton.addEventListener('click', fillExample, false);
+}
+
+function updateKQs(primaryAI) {
+  let kqInput = document.getElementById('keyQualifierInput');
+  kqInput.innerHTML = '';
+  let h3 = document.createElement('h3');
+  h3.appendChild(document.createTextNode('Key qualifiers'));
+  kqInput.appendChild(h3);
+  if (gs1dlt.aiQualifiers[primaryAI] != undefined) {
+    gs1dlt.aiQualifiers[primaryAI].forEach(function (kq) {
+      let label = document.createElement('label');
+      label.for = kq;
+      label.appendChild(document.createTextNode(gs1dlt.aitable.find(x => x.ai == kq).title));
+      let input = document.createElement('input');
+      input.type='text';
+      input.id = kq;
+      kqInput.appendChild(label);
+      kqInput.appendChild(input);
+    });
+  } else {
+    kqInput.appendChild(document.createTextNode('There are no qualifiers for a ' + gs1dlt.aitable.find(x => x.ai == primaryAI).title));
+  }
+}
+
+function updateDAs() {
+  daInput = document.getElementById('daInput');
+  daInput.innerHTML = '';
+  let h3 = document.createElement('h3');
+  h3.appendChild(document.createTextNode('Data attributes'));
+  daInput.appendChild(h3);
+  daInput.appendChild(createDataAttributeInput());
+}
+
+
+function createDataAttributeInput() {
+  noDaAttributes++;
+  let div = document.createElement('div');
+  div.id = 'daInput' + noDaAttributes;
+  let sel = document.createElement('select');
+  sel.id = 'DaSelector' + noDaAttributes;
+  let o = document.createElement('option');
+  o.appendChild(document.createTextNode(placeHolder));
+  sel.appendChild(o);
+  gs1dlt.aitable.forEach(function (k) {
+    if (k.type == 'D') {
+      o = document.createElement('option');
+      o.value = k.ai;
+      o.appendChild(document.createTextNode('[' + k.ai + ']' + ' ' + k.title));
+      sel.appendChild(o);
+    }
+  });
+  let label = document.createElement('label');
+  label.for = 'DaValue' + noDaAttributes;
+  label.appendChild(document.createTextNode('Value'));
+  let input = document.createElement('input');
+  input.type = 'text';
+  input.id = 'DaValue' + noDaAttributes;
+  div.appendChild(sel);
+  div.appendChild(label);
+  div.appendChild(input);
+  let span = document.createElement('span');
+  span.classList.add('addDA');
+  span.appendChild(document.createTextNode('+'));
+  span.addEventListener('click', addDataAttribute, false);
+  div.appendChild(span);
+  span = document.createElement('span');
+  span.classList.add('removeDA');
+  span.appendChild(document.createTextNode('-'));
+  span.addEventListener('click', function() {removeDataAttribute(div.id)}, false);
+  div.appendChild(span);
+  return div;
+}
+
+function addDataAttribute() {
+  document.getElementById('daInput').appendChild(createDataAttributeInput());
+}
+
+function removeDataAttribute(e) {
+  if (e == 'daInput1') {
+    document.getElementById('DaValue1').value = '';
+    document.getElementById('DaSelector1').value = placeHolder;
+  } else {
+    let nodeToRemove = document.getElementById(e);
+    nodeToRemove.parentNode.removeChild(nodeToRemove);
+  }
+}
+
+function fillExample() {
+  document.getElementById('primaryKeyAI').value = '01';
+  document.getElementById('primaryKeyValue').value = '09506000134352';
+  updateKQs('01');
+  document.getElementById('10').value = 'ABCDEF';
+  document.getElementById('21').value = '1234';
+  updateDAs();
+  let children = document.getElementById('daInput').childNodes;
+  let n = children[1].id.substr(7);
+  document.getElementById('DaSelector' + n).value = '17';
+  document.getElementById('DaValue' + n).value = '221225';
+}
+
+function generateOutput() {
+  // Basic assumption is the the gs1dlt will do our error checking for us. 
+  // So we construct an associatve array as if there are no errors in the input data, but try and give meaningful error messages from the gs1dlt
+  let a = {};
+  let outputArea = document.getElementById('outputArea');
+  // primary key is easy
+  a[document.getElementById('primaryKeyAI').value] = document.getElementById('primaryKeyValue').value;
+
+  // now we want the key qualifers (if any)
+  let kqInput = document.getElementById('keyQualifierInput');
+  let children = kqInput.childNodes;
+  children.forEach(function(i) {
+    if ((i.nodeName == 'INPUT') && (i.value !== '')) {
+      a[i.id] = i.value;
+    }
+  });
+
+  // Now we want the data attributes
+
+  let daInput = document.getElementById('daInput');
+  divs = daInput.childNodes;
+  divs.forEach(function(i) {
+    if (i.nodeName == 'DIV') {
+      let dataAttributes = i.childNodes;
+      let k, v;
+      dataAttributes.forEach(function(d) {
+        if (d.nodeName == 'SELECT') {
+          k = d.value;
+        } else if (d.nodeName == 'INPUT') {
+          v = d.value;
+        }
+      });
+      a[k] = v;
+    }
+  });
+  // console.log(a);
+  // So we have our associative array (a) and we want to pass this into the gs1dlt
+
+  try {
+    // If we're here, we have a valid set of AIs and values
+    // Start with Human readable AI syntax
+  	let gs1ElementStrings = gs1dlt.buildGS1elementStrings(a,true);
+    let p = document.createElement('p');
+    p.id = 'AIbrackets';
+    let thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Human-readable AI syntax'));
+    p.appendChild(thSpan);
+    let tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(gs1ElementStrings));
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    // Now AI syntax
+
+    p = document.createElement('p');
+    p.id = 'AInoBrackets';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Pure AI syntax'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(gs1dlt.buildGS1elementStrings(a,false)));
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    //Now DL URI
+
+    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(gs1ElementStrings, false, 'https://example.com')
+    p = document.createElement('p');
+    p.id = 'dlURI';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('GS1 Digital Link URI'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    tdSpan.appendChild(document.createTextNode(dlURI));
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+    let figure = document.createElement('figure');
+    figure.id = 'dm';
+    let img = document.createElement('img');
+    img.alt = 'GS1 Data Matrix for supplied data';
+    img.src = terryScript + 'gs1datamatrix&text=' + gs1ElementStrings;
+    figure.appendChild(img);
+    let figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(gs1ElementStrings));
+    figure.appendChild(figcaption);
+    outputArea.appendChild(figure);
+
+    figure = document.createElement('figure');
+    figure.id = 'qr';
+    img = document.createElement('img');
+    img.alt = 'QR code containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'qrcode&text=' + dlURI;
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(dlURI));
+    figure.appendChild(figcaption);
+    outputArea.appendChild(figure);
+    
+
+  } catch(err) {
+  	console.log(err);
+  }
+}
+</script>
+
+</body></html>
