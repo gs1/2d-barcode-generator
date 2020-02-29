@@ -78,7 +78,7 @@ function init() {
     if (k.type == 'I') {                        // We have a primay key
       let o = document.createElement('option');
       o.value = k.ai;
-      o.appendChild(document.createTextNode(k.title));
+      o.appendChild(document.createTextNode('[' + k.ai + '] ' + k.title));
       if (k.ai == '01') {o.selected = true} // default to GTIN
       primaryKeyAI.appendChild(o);
     }
@@ -101,7 +101,7 @@ function updateKQs(primaryAI) {
     gs1dlt.aiQualifiers[primaryAI].forEach(function (kq) {
       let label = document.createElement('label');
       label.for = kq;
-      label.appendChild(document.createTextNode(gs1dlt.aitable.find(x => x.ai == kq).title));
+      label.appendChild(document.createTextNode('[' + kq + '] ' + gs1dlt.aitable.find(x => x.ai == kq).title));
       let input = document.createElement('input');
       input.type='text';
       input.id = kq;
@@ -277,6 +277,7 @@ function generateOutput() {
     let img = document.createElement('img');
     img.alt = 'GS1 Data Matrix for supplied data';
     img.src = terryScript + 'gs1datamatrix&text=' + gs1ElementStrings;
+console.log('sending ' + gs1ElementStrings);
     figure.appendChild(img);
     let figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(gs1ElementStrings));
