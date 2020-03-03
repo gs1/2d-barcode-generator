@@ -293,7 +293,11 @@ function generateOutput() {
     p.appendChild(thSpan);
     tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
-    tdSpan.appendChild(document.createTextNode(dlURI));
+    let hyperlink = document.createElement('a');
+    hyperlink.href = dlURI;
+    hyperlink.title = gs1ElementStrings;
+    hyperlink.appendChild(document.createTextNode(dlURI));
+    tdSpan.appendChild(hyperlink);
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
