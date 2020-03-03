@@ -31,11 +31,12 @@
     span.td {
       font-weight: normal;
     }
+
   </style>
 </head>
 <body>
 
-<header><h1>GS1 Digital Link Barcode Generator</h1><p>Very much <em>under construction!</em></p></header>
+<header><h1>GS1 Digital Link Barcode Generator</h1><p>Still very much <em>under construction</em> in terms of style but the functionality is pretty much done.</p></header>
 <main>
 <p>This helps you to manually create a variety of GS1 barcodes and QR codes that carry GS1 Digital Link URIs.</p>
 
@@ -44,16 +45,20 @@
   <section id="primaryKeyInput"><h3>Primary key</h3>
     <label for="primaryKeyAI">Primary key (AI)</label> <select id="primaryKeyAI"></select> 
     <label for="primaryKeyValue">Value</label> <input type="text" id="primaryKeyValue" />
-<span id="foo"></span>
   </section>
 
   <section id="keyQualifierInput"></section>
 
   <section id="daInput"></section>
+
+  <section id="resolverInput">
+    <h2>For GS1 Digital Link</h2>
+    <label for="goResolver">Use GS1 Global Office resolver </label> <input type="checkbox" checked id="goResolver" />  
+    <br /><label for="userResolver">Your resolver </label> <input type="text" id="userResolver" disabled value="https://" />  
+  </section>
 </section>
 
-<section id="outputArea"><h2>Output</h2>
-  <button id="generate">Generate Barcode</button>
+<section id="outputArea">
 
 </section>
 
@@ -85,10 +90,23 @@ function init() {
   });
   updateKQs(primaryKeyAI.value);
   updateDAs();
-  let gButton = document.getElementById('generate');
-  gButton.addEventListener('click', generateOutput, false);
-  gButton = document.getElementById('useExample');
+  let goResolver = document.getElementById('goResolver');
+  goResolver.addEventListener('change', function() {document.getElementById('userResolver').disabled = this.checked ? true : false}, false);
+  createGenerateButton();
+  let gButton = document.getElementById('useExample');
   gButton.addEventListener('click', fillExample, false);
+}
+
+function createGenerateButton() {
+  let h2 = document.createElement('h2');
+  h2.appendChild(document.createTextNode('Output'));
+  let gButton = document.createElement('button');
+  gButton.id = 'generate';
+  gButton.appendChild(document.createTextNode('Generate Barcode'));
+  gButton.addEventListener('click', generateOutput, false);
+  let outputArea = document.getElementById('outputArea');
+  outputArea.appendChild(h2);
+  outputArea.appendChild(gButton);
 }
 
 function updateKQs(primaryAI) {
@@ -194,6 +212,8 @@ function generateOutput() {
   // So we construct an associatve array as if there are no errors in the input data, but try and give meaningful error messages from the gs1dlt
   let a = {};
   let outputArea = document.getElementById('outputArea');
+  outputArea.innerHTML = '';
+  createGenerateButton();
   // primary key is easy
   a[document.getElementById('primaryKeyAI').value] = document.getElementById('primaryKeyValue').value;
 
@@ -224,13 +244,17 @@ function generateOutput() {
       a[k] = v;
     }
   });
-  // console.log(a);
+  console.log(a);
+
   // So we have our associative array (a) and we want to pass this into the gs1dlt
 
   try {
     // If we're here, we have a valid set of AIs and values
     // Start with Human readable AI syntax
-  	let gs1ElementStrings = gs1dlt.buildGS1elementStrings(a,true);
+    // The next line will raise an error if there's anything wrong with any of the values
+    let gs1ElementStrings = gs1dlt.buildGS1elementStrings(a,true);
+    // But it's not ordered with fixed length strings first so we actually need to use the sorted function
+    gs1ElementStrings = sortElementString(a);
     let p = document.createElement('p');
     p.id = 'AIbrackets';
     let thSpan = document.createElement('span');
@@ -254,12 +278,13 @@ function generateOutput() {
     tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
     tdSpan.appendChild(document.createTextNode(gs1dlt.buildGS1elementStrings(a,false)));
+    // That function *does* put the fixed length AIs first
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
     //Now DL URI
 
-    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(gs1ElementStrings, false, 'https://example.com')
+    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(gs1ElementStrings, false, getResolver())
     p = document.createElement('p');
     p.id = 'dlURI';
     thSpan = document.createElement('span');
@@ -277,7 +302,7 @@ function generateOutput() {
     let img = document.createElement('img');
     img.alt = 'GS1 Data Matrix for supplied data';
     img.src = terryScript + 'gs1datamatrix&text=' + gs1ElementStrings;
-console.log('sending ' + gs1ElementStrings);
+    // console.log('sending ' + gs1ElementStrings + ' to the DataMatrix generator');
     figure.appendChild(img);
     let figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(gs1ElementStrings));
@@ -298,7 +323,39 @@ console.log('sending ' + gs1ElementStrings);
 
   } catch(err) {
   	console.log(err);
+    outputArea.innerHTML = err;
   }
+}
+
+function sortElementString(a) {
+  // Need to sort the array so that the order is:
+  // Primary key
+  // Fixed length
+  // The rest
+
+  // a is an associative array of AIs and their values.
+  // We need to create a version of the string in the right order for sending to the DataMatrix
+  let sorted = ''
+  for (i in a) {    // Look for the primary key
+    if (gs1dlt.aitable.find(x => x.ai == i).type == 'I') {
+      sorted = '(' + i + ')' + a[i];
+    }
+  }
+  for (i in a) {    // Look for fixed length AIs
+    if ((sorted.indexOf('('+ i + ')') == -1) && (gs1dlt.aitable.find(x => x.ai == i).fixedLength == true)) {
+      sorted += '(' + i + ')' + a[i];
+    }
+  }
+  for (i in a) {    // Everything else
+    if (sorted.indexOf('('+ i + ')') == -1) {
+      sorted += '(' + i + ')' + a[i];
+    }
+  }
+  return sorted;
+}
+
+function getResolver() {
+  return ((!document.getElementById('goResolver').checked) && (document.getElementById('userResolver').value != 'https://')) ? document.getElementById('userResolver').value : 'https://id.gs1.org/';
 }
 </script>
 
