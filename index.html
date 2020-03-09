@@ -241,7 +241,7 @@ function generateOutput() {
           v = d.value;
         }
       });
-      a[k] = v;
+      if (v !== '') {a[k] = v};
     }
   });
   console.log(a);
