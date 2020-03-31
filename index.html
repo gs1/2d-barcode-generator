@@ -95,7 +95,7 @@
 
 <header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator</h1></header>
 <main>
-<p>This helps you to create equivalent GS1 DataMatrix and GS1 Digital Link QR codes<sup><a href="#_1">1</a></sup>.</p>
+<p>This helps you to create equivalent GS1 DataMatrix and GS1 Digital Link QR codes<sup><a href="#_1">1</a></sup> as well as a 1D barcode for <abbr title="Global Trade Item Number">GTIN</abbr>s.</p>
 
 <section id="inputForm"><h2>Input</h2>
   <button id="useExample">Use example data</button>
@@ -385,7 +385,26 @@ function generateOutput() {
     figcaption.appendChild(document.createTextNode(dlURI));
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
-    
+    if (document.getElementById('primaryKeyAI').value === '01') {
+      let bcType = 'ean14'; let gtin = document.getElementById('primaryKeyValue').value;
+      if (gtin.indexOf('0') === 0) { // might be 13 or 12
+        gtin = gtin.substring(1);
+        bcType = 'ean13';
+      } else {
+        gtin = '(01)' + gtin;
+      }
+      figure = document.createElement('figure');
+      figure.id = 'ean';
+      img = document.createElement('img');
+      img.alt = '1D barcode carrying the GTIN (only)';
+      img.src = terryScript + bcType + '&text=' + gtin;
+      figure.appendChild(img);
+      figcaption = document.createElement('figcaption');
+      figcaption.appendChild(document.createTextNode(gtin));
+      figure.appendChild(figcaption);
+      outputArea.appendChild(figure);
+
+    }
 
   } catch(err) {
   	console.log(err);
