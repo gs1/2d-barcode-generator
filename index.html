@@ -110,7 +110,7 @@
 
   <section id="resolverInput">
     <h2>For GS1 Digital Link</h2>
-    <p><label for="goResolver">Use GS1 Global Office resolver </label> <input type="checkbox" checked id="goResolver" />  
+    <p><label for="goResolver">Use GS1 Global Office resolver </label> <input type="checkbox" checked id="goResolver" /> 
     <br /><label for="userResolver">Your resolver </label> <input type="text" id="userResolver" disabled value="https://" /></p>
   </section>
 </section>
@@ -385,6 +385,20 @@ function generateOutput() {
     figcaption.appendChild(document.createTextNode(dlURI));
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
+
+    figure = document.createElement('figure');
+    figure.id = 'dldm';
+    img = document.createElement('img');
+    img.alt = 'Data Matrix containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'datamatrix&text=' + dlURI;
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(dlURI));
+    figure.appendChild(figcaption);
+    outputArea.appendChild(figure);
+
+
+
     if (document.getElementById('primaryKeyAI').value === '01') {
       let bcType = 'ean14'; let gtin = document.getElementById('primaryKeyValue').value;
       if (gtin.indexOf('0') === 0) { // might be 13 or 12
@@ -397,11 +411,11 @@ function generateOutput() {
       figure.id = 'ean';
       img = document.createElement('img');
       img.alt = '1D barcode carrying the GTIN (only)';
-      img.src = terryScript + bcType + '&text=' + gtin;
+      img.src = terryScript + bcType + '&includetext&text=' + gtin;
       figure.appendChild(img);
-      figcaption = document.createElement('figcaption');
-      figcaption.appendChild(document.createTextNode(gtin));
-      figure.appendChild(figcaption);
+      //figcaption = document.createElement('figcaption');
+      //figcaption.appendChild(document.createTextNode(gtin));
+      //figure.appendChild(figcaption);
       outputArea.appendChild(figure);
 
     }
