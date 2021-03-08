@@ -95,7 +95,7 @@
 
 <header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator</h1></header>
 <main>
-<p>This helps you to create equivalent GS1 DataMatrix and GS1 Digital Link QR codes<sup><a href="#_1">1</a></sup> as well as a 1D barcode for <abbr title="Global Trade Item Number">GTIN</abbr>s.</p>
+<p>This helps you to create equivalent GS1 DataMatrix, GS1 Digital Link QR codes<sup><a href="#_1">1</a></sup> and GS1 Digital Link Data Matrix codes, as well as a 1D barcode for <abbr title="Global Trade Item Number">GTIN</abbr>s.</p>
 
 <section id="inputForm"><h2>Input</h2>
   <button id="useExample">Use example data</button>
@@ -310,6 +310,12 @@ function generateOutput() {
 
   // So we have our associative array (a) and we want to pass this into the gs1dlt
 
+  //Need to URL-encode values in the array before we pass it to the toolkit
+
+  for (let i in a) {
+    a[i] = encodeURIComponent(a[i]);
+  }
+
   try {
     // If we're here, we have a valid set of AIs and values
     // Start with Human readable AI syntax
@@ -325,7 +331,7 @@ function generateOutput() {
     p.appendChild(thSpan);
     let tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
-    tdSpan.appendChild(document.createTextNode(gs1ElementStrings));
+    tdSpan.appendChild(document.createTextNode(decodeURIComponent(gs1ElementStrings)));
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
@@ -339,7 +345,7 @@ function generateOutput() {
     p.appendChild(thSpan);
     tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
-    tdSpan.appendChild(document.createTextNode(gs1dlt.buildGS1elementStrings(a,false)));
+    tdSpan.appendChild(document.createTextNode(decodeURIComponent(gs1dlt.buildGS1elementStrings(a,false))));
     // That function *does* put the fixed length AIs first
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
@@ -363,6 +369,7 @@ function generateOutput() {
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
+    // GS1 DataMatrix
     let figure = document.createElement('figure');
     figure.id = 'dm';
     let img = document.createElement('img');
@@ -371,10 +378,12 @@ function generateOutput() {
     // console.log('sending ' + gs1ElementStrings + ' to the DataMatrix generator');
     figure.appendChild(img);
     let figcaption = document.createElement('figcaption');
-    figcaption.appendChild(document.createTextNode(gs1ElementStrings));
+    figcaption.appendChild(document.createTextNode(decodeURIComponent(gs1ElementStrings)));
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
 
+
+    // GS1 DL QR Code
     figure = document.createElement('figure');
     figure.id = 'qr';
     img = document.createElement('img');
@@ -386,6 +395,7 @@ function generateOutput() {
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
 
+    // GS1 DL Data Matrix
     figure = document.createElement('figure');
     figure.id = 'dldm';
     img = document.createElement('img');
@@ -398,7 +408,7 @@ function generateOutput() {
     outputArea.appendChild(figure);
 
 
-
+    // 1D barcode if GTIN
     if (document.getElementById('primaryKeyAI').value === '01') {
       let bcType = 'ean14'; let gtin = document.getElementById('primaryKeyValue').value;
       if (gtin.indexOf('0') === 0) { // might be 13 or 12
