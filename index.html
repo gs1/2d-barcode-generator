@@ -388,7 +388,7 @@ function generateOutput() {
     figure.id = 'qr';
     img = document.createElement('img');
     img.alt = 'QR code containing GS1 Digital Link URI for supplied data';
-    img.src = terryScript + 'qrcode&text=' + dlURI;
+    img.src = terryScript + 'qrcode&text=' + encodeURIComponent(dlURI);
     figure.appendChild(img);
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(dlURI));
@@ -400,7 +400,7 @@ function generateOutput() {
     figure.id = 'dldm';
     img = document.createElement('img');
     img.alt = 'Data Matrix containing GS1 Digital Link URI for supplied data';
-    img.src = terryScript + 'datamatrix&text=' + dlURI;
+    img.src = terryScript + 'datamatrix&text=' + encodeURIComponent(dlURI);
     figure.appendChild(img);
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(dlURI));
