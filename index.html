@@ -310,12 +310,6 @@ function generateOutput() {
 
   // So we have our associative array (a) and we want to pass this into the gs1dlt
 
-  //Need to URL-encode values in the array before we pass it to the toolkit
-
-  for (let i in a) {
-    a[i] = encodeURIComponent(a[i]);
-  }
-
   try {
     // If we're here, we have a valid set of AIs and values
     // Start with Human readable AI syntax
@@ -331,7 +325,7 @@ function generateOutput() {
     p.appendChild(thSpan);
     let tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
-    tdSpan.appendChild(document.createTextNode(decodeURIComponent(gs1ElementStrings)));
+    tdSpan.appendChild(document.createTextNode(gs1ElementStrings));
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
@@ -345,14 +339,15 @@ function generateOutput() {
     p.appendChild(thSpan);
     tdSpan = document.createElement('span');
     tdSpan.classList.add('td');
-    tdSpan.appendChild(document.createTextNode(decodeURIComponent(gs1dlt.buildGS1elementStrings(a,false))));
+    tdSpan.appendChild(document.createTextNode(gs1dlt.buildGS1elementStrings(a,false)));
     // That function *does* put the fixed length AIs first
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
     //Now DL URI
+    // remember to %-encode the element string before passing to DL Toolkit
 
-    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(gs1ElementStrings, false, getResolver())
+    let dlURI = gs1dlt.gs1ElementStringsToGS1DigitalLink(encodeURIComponent(gs1ElementStrings), false, getResolver())
     p = document.createElement('p');
     p.id = 'dlURI';
     thSpan = document.createElement('span');
@@ -378,7 +373,7 @@ function generateOutput() {
     // console.log('sending ' + gs1ElementStrings + ' to the DataMatrix generator');
     figure.appendChild(img);
     let figcaption = document.createElement('figcaption');
-    figcaption.appendChild(document.createTextNode(decodeURIComponent(gs1ElementStrings)));
+    figcaption.appendChild(document.createTextNode(gs1ElementStrings));
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
 
