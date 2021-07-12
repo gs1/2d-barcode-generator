@@ -364,6 +364,29 @@ function generateOutput() {
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
+    //Now Compressed DL URI
+    // remember to %-encode the element string before passing to DL Toolkit (not sure this is still necessary 2021-07-12)
+
+    let compDL = gs1dlt.compressGS1DigitalLink(dlURI, false, getResolver(), false, true, false);
+    // console.log(`Compressed URL is ${compDL}`);
+
+    p = document.createElement('p');
+    p.id = 'compDL';
+    thSpan = document.createElement('span');
+    thSpan.classList.add('th');
+    thSpan.appendChild(document.createTextNode('Compressed GS1 Digital Link URI'));
+    p.appendChild(thSpan);
+    tdSpan = document.createElement('span');
+    tdSpan.classList.add('td');
+    hyperlink = document.createElement('a');
+    hyperlink.href = dlURI;
+    hyperlink.title = gs1ElementStrings;
+    hyperlink.appendChild(document.createTextNode(compDL));
+    tdSpan.appendChild(hyperlink);
+    p.appendChild(tdSpan);
+    outputArea.appendChild(p);
+
+
     // GS1 DataMatrix
     let figure = document.createElement('figure');
     figure.id = 'dm';
@@ -390,6 +413,18 @@ function generateOutput() {
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
 
+    // Compressed GS1 DL QR Code
+    figure = document.createElement('figure');
+    figure.id = 'compqr';
+    img = document.createElement('img');
+    img.alt = 'QR code containing the compressed GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'qrcode&text=' + encodeURIComponent(compDL);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(compDL));
+    figure.appendChild(figcaption);
+    outputArea.appendChild(figure);
+
     // GS1 DL Data Matrix
     figure = document.createElement('figure');
     figure.id = 'dldm';
@@ -399,6 +434,18 @@ function generateOutput() {
     figure.appendChild(img);
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(dlURI));
+    figure.appendChild(figcaption);
+    outputArea.appendChild(figure);
+
+    // Compresed GS1 DL Data Matrix
+    figure = document.createElement('figure');
+    figure.id = 'compdldm';
+    img = document.createElement('img');
+    img.alt = 'Data Matrix containing GS1 Digital Link URI for supplied data';
+    img.src = terryScript + 'datamatrix&text=' + encodeURIComponent(compDL);
+    figure.appendChild(img);
+    figcaption = document.createElement('figcaption');
+    figcaption.appendChild(document.createTextNode(compDL));
     figure.appendChild(figcaption);
     outputArea.appendChild(figure);
 
