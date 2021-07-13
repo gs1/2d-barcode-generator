@@ -367,8 +367,10 @@ function generateOutput() {
     //Now Compressed DL URI
     // remember to %-encode the element string before passing to DL Toolkit (not sure this is still necessary 2021-07-12)
 
-    let compDL = gs1dlt.compressGS1DigitalLink(dlURI, false, getResolver(), false, true, false);
-    // console.log(`Compressed URL is ${compDL}`);
+    let res = getResolver();
+    res = res.substring(0,res.length-1);
+    let compDL = gs1dlt.compressGS1DigitalLink(dlURI, false, res, false, true, false);
+    console.log(`Compressed URL is ${compDL}`);
 
     p = document.createElement('p');
     p.id = 'compDL';
