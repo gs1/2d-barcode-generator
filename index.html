@@ -95,7 +95,14 @@
 
 <header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator</h1></header>
 <main>
-<p>This helps you to create equivalent GS1 DataMatrix, GS1 Digital Link QR codes<sup><a href="#_1">1</a></sup> and GS1 Digital Link Data Matrix codes, as well as a 1D barcode for <abbr title="Global Trade Item Number">GTIN</abbr>s.</p>
+<p>This tool is designed to show how different GS1 syntaxes can be used in different data carriers. Three different syntaxes are shown:</p>
+<ol>
+  <li>Plain syntax (just the <abbr title="Global Trade Item Number">GTIN</abbr> in a 1D EAN/UPC barcode);</li>
+  <li>GS1 element string syntax;</li>
+  <li>GS1 Digital Link syntax, including its compressed form.</li>
+</ol>
+<p>The latter two syntaxes are shown in Data Matrix and QR symbols.</p>
+<p><strong>N.B.</strong> The codes here are for demo purposes only and are <strong>not</strong> suitable for use on real world products.</p>
 
 <section id="inputForm"><h2>Input</h2>
   <button id="useExample">Use example data</button>
@@ -388,6 +395,13 @@ function generateOutput() {
     p.appendChild(tdSpan);
     outputArea.appendChild(p);
 
+    // Now we need to create the figurs that contain the barcodes.
+    // Since this triggers an HTTP GET in the browser for each one, we need to
+    // Add them asynchronously so that the API we're calling doesn't get overloaded
+    // So we'll put all the figure objects into an array and then process that
+    // array asynchronously to add to the output DOM
+
+    let barcodes = [];
 
     // GS1 DataMatrix
     let figure = document.createElement('figure');
@@ -400,7 +414,7 @@ function generateOutput() {
     let figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(gs1ElementStrings));
     figure.appendChild(figcaption);
-    outputArea.appendChild(figure);
+    barcodes.push(figure);
 
 
     // GS1 DL QR Code
@@ -413,7 +427,7 @@ function generateOutput() {
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(dlURI));
     figure.appendChild(figcaption);
-    outputArea.appendChild(figure);
+    barcodes.push(figure);
 
     // Compressed GS1 DL QR Code
     figure = document.createElement('figure');
@@ -425,7 +439,7 @@ function generateOutput() {
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(compDL));
     figure.appendChild(figcaption);
-    outputArea.appendChild(figure);
+    barcodes.push(figure);
 
     // GS1 DL Data Matrix
     figure = document.createElement('figure');
@@ -437,7 +451,7 @@ function generateOutput() {
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(dlURI));
     figure.appendChild(figcaption);
-    outputArea.appendChild(figure);
+    barcodes.push(figure);
 
     // Compresed GS1 DL Data Matrix
     figure = document.createElement('figure');
@@ -449,7 +463,8 @@ function generateOutput() {
     figcaption = document.createElement('figcaption');
     figcaption.appendChild(document.createTextNode(compDL));
     figure.appendChild(figcaption);
-    outputArea.appendChild(figure);
+    barcodes.push(figure);
+//  outputArea.appendChild(figure);
 
 
     // 1D barcode if GTIN
@@ -467,18 +482,28 @@ function generateOutput() {
       img.alt = '1D barcode carrying the GTIN (only)';
       img.src = terryScript + bcType + '&includetext&text=' + gtin;
       figure.appendChild(img);
+      barcodes.push(figure);
       //figcaption = document.createElement('figcaption');
       //figcaption.appendChild(document.createTextNode(gtin));
       //figure.appendChild(figcaption);
-      outputArea.appendChild(figure);
-
+      // outputArea.appendChild(figure);
     }
+    addBarcodes(barcodes);
 
   } catch(err) {
   	console.log(err);
     outputArea.innerHTML = err;
   }
 }
+
+
+const addBarcodes = async (barcodes) =>
+{
+  for (i in barcodes) {
+    await (outputArea.appendChild(barcodes[i]));
+  }
+}
+
 
 function sortElementString(a) {
   // Need to sort the array so that the order is:
