@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width" />
-  <title>GS1 Digital Link Barcode Generator</title>
+  <title>GS1 Digital Link Barcode Generator (deprecated)</title>
   <script src="https://gs1.github.io/GS1DigitalLinkCompressionPrototype/src/GS1DigitalLinkToolkit.js"></script>
   <style type="text/css">
     body {font-family: sans-serif}
@@ -93,17 +93,14 @@
 </head>
 <body>
 
-<header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator</h1></header>
+<header><img src="gs1logo.png" alt="GS1 logo" /><h1>GS1 Digital Link Barcode Generator (deprecated)</h1></header>
 <main>
-<p>This tool is designed to show how different GS1 syntaxes can be used in different data carriers. Three different syntaxes are shown:</p>
-<ol>
-  <li>Plain syntax (just the <abbr title="Global Trade Item Number">GTIN</abbr> in a 1D EAN/UPC barcode);</li>
-  <li>GS1 element string syntax;</li>
-  <li>GS1 Digital Link syntax, including its compressed form.</li>
-</ol>
-<p>The latter two syntaxes are shown in Data Matrix and QR symbols.</p>
-<p><strong>N.B.</strong> The codes here are for demo purposes only and are <strong>not</strong> suitable for use on real world products.</p>
+<p>This tool for generating 2D barcodes with GS1 Element String syntax and GS1 Digital Link URIs was developed in 2022, primarily to show that the informational content of each was identical.</p>
+<p>Since its creation, it has been superseded by the <a href="https://ref.gs1.org/tools/gs1-barcode-syntax-resource/">Barcode Syntax Resource</a> which is well maintained and up to date. This original tool is now deprecated, is no longer supported and should not be used. It is preserved here for archival reasons only.</p>
+  <hr>
+  <p>If you really want to use this and not the recommended Barcode Syntax Resource, be aware that this is purely for demo purposes and the barcodes generated are not suitable for real world use.</p>
 
+  
 <section id="inputForm"><h2>Input</h2>
   <button id="useExample">Use example data</button>
   <section id="primaryKeyInput"><h3>Primary key</h3>
